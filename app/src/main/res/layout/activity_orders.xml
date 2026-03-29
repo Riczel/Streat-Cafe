@@ -1,0 +1,141 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/main"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/bg_cream"
+    tools:context=".Orders">
+
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:id="@+id/topBar"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:padding="16dp"
+        app:layout_constraintTop_toTopOf="parent">
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="My Order"
+            android:textColor="@color/dark_brown"
+            android:textSize="20sp"
+            android:textStyle="bold"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent" />
+    </androidx.constraintlayout.widget.ConstraintLayout>
+
+    <!-- Active Orders Label -->
+    <TextView
+        android:id="@+id/tvActiveOrdersLabel"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:paddingHorizontal="16dp"
+        android:paddingVertical="16dp"
+        android:text="Active Orders"
+        android:textColor="@color/dark_brown"
+        android:textSize="18sp"
+        android:textStyle="bold"
+        app:layout_constraintTop_toBottomOf="@id/topBar" />
+
+    <androidx.swiperefreshlayout.widget.SwipeRefreshLayout
+        android:id="@+id/swipeRefreshLayout"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        app:layout_constraintBottom_toTopOf="@+id/bottomNav"
+        app:layout_constraintTop_toBottomOf="@id/tvActiveOrdersLabel">
+
+        <FrameLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent">
+
+            <!-- Empty State -->
+            <LinearLayout
+                android:id="@+id/emptyState"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:gravity="center"
+                android:orientation="vertical"
+                android:padding="32dp"
+                android:visibility="gone">
+
+                <ImageView
+                    android:layout_width="150dp"
+                    android:layout_height="150dp"
+                    android:src="@drawable/order_button"
+                    app:tint="@color/accent_tan"
+                    android:contentDescription="@null" />
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="16dp"
+                    android:text="No Orders Yet"
+                    android:textColor="@color/dark_brown"
+                    android:textSize="18sp"
+                    android:textStyle="bold" />
+
+                <TextView
+                    android:id="@+id/tvEmptyMessage"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="8dp"
+                    android:gravity="center"
+                    android:text="Looks like you haven't placed any orders yet."
+                    android:textColor="@color/nav_active_brown"
+                    android:textSize="14sp" />
+
+                <androidx.appcompat.widget.AppCompatButton
+                    android:id="@+id/btnOrderNow"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="24dp"
+                    android:background="@drawable/bg_option_selected"
+                    android:paddingHorizontal="32dp"
+                    android:text="Order Now"
+                    android:textAllCaps="false"
+                    android:textColor="@color/text_white_cream" />
+            </LinearLayout>
+
+            <androidx.recyclerview.widget.RecyclerView
+                android:id="@+id/rvOrders"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:padding="16dp"
+                android:clipToPadding="false" />
+        </FrameLayout>
+    </androidx.swiperefreshlayout.widget.SwipeRefreshLayout>
+
+    <LinearLayout
+        android:id="@+id/bottomNav"
+        android:layout_width="match_parent"
+        android:layout_height="70dp"
+        android:background="@color/accent_tan"
+        android:orientation="horizontal"
+        app:layout_constraintBottom_toBottomOf="parent">
+
+        <LinearLayout android:id="@+id/navHome" android:layout_width="0dp" android:layout_height="match_parent" android:layout_weight="1" android:gravity="center" android:orientation="vertical" android:clickable="true" android:focusable="true" android:background="?attr/selectableItemBackground">
+            <ImageView android:layout_width="30dp" android:layout_height="30dp" android:src="@drawable/_407802_200_removebg_preview" app:tint="@color/dark_brown" android:contentDescription="@null" />
+            <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="HOME" android:textColor="@color/dark_brown" android:textSize="10sp" tools:ignore="SmallSp" />
+        </LinearLayout>
+        <LinearLayout android:id="@+id/navMenu" android:layout_width="0dp" android:layout_height="match_parent" android:layout_weight="1" android:gravity="center" android:orientation="vertical" android:clickable="true" android:focusable="true" android:background="?attr/selectableItemBackground">
+            <ImageView android:layout_width="30dp" android:layout_height="30dp" android:src="@drawable/waitress_icon_on_transparent_background_260nw_2342956133_removebg_preview" app:tint="@color/dark_brown" android:contentDescription="@null" />
+            <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="MENU" android:textColor="@color/dark_brown" android:textSize="10sp" tools:ignore="SmallSp" />
+        </LinearLayout>
+        <LinearLayout android:id="@+id/navDiscover" android:layout_width="0dp" android:layout_height="match_parent" android:layout_weight="1" android:gravity="center" android:orientation="vertical" android:clickable="true" android:focusable="true" android:background="?attr/selectableItemBackground">
+            <ImageView android:layout_width="28dp" android:layout_height="28dp" android:src="@drawable/search_icon_isolated_on_white_background_creative_modern_logo_vector_removebg_preview" app:tint="@color/dark_brown" android:contentDescription="@null" />
+            <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="DISCOVER" android:textColor="@color/dark_brown" android:textSize="10sp" tools:ignore="SmallSp" />
+        </LinearLayout>
+        <LinearLayout android:id="@+id/navOrders" android:layout_width="0dp" android:layout_height="match_parent" android:layout_weight="1" android:gravity="center" android:background="@color/card_brown" android:orientation="vertical">
+            <ImageView android:layout_width="30dp" android:layout_height="30dp" android:src="@drawable/order_button" app:tint="@color/text_white_cream" android:contentDescription="@null" />
+            <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="ORDERS" android:textColor="@color/text_white_cream" android:textSize="10sp" tools:ignore="SmallSp" />
+        </LinearLayout>
+        <LinearLayout android:id="@+id/navProfile" android:layout_width="0dp" android:layout_height="match_parent" android:layout_weight="1" android:gravity="center" android:orientation="vertical" android:clickable="true" android:focusable="true" android:background="?attr/selectableItemBackground">
+            <ImageView android:layout_width="30dp" android:layout_height="30dp" android:src="@drawable/istockphoto_1225790722_612x612_removebg_preview" app:tint="@color/dark_brown" android:contentDescription="@null" />
+            <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="PROFILE" android:textColor="@color/dark_brown" android:textSize="10sp" tools:ignore="SmallSp" />
+        </LinearLayout>
+    </LinearLayout>
+
+</androidx.constraintlayout.widget.ConstraintLayout>

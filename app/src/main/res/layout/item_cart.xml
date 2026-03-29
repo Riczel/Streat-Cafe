@@ -1,0 +1,167 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.cardview.widget.CardView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_marginHorizontal="16dp"
+    android:layout_marginVertical="8dp"
+    app:cardCornerRadius="15dp"
+    app:cardElevation="4dp">
+
+    <HorizontalScrollView
+        android:id="@+id/cartItemScrollView"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:fillViewport="true"
+        android:scrollbars="none"
+        android:overScrollMode="never">
+
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal">
+
+            <androidx.constraintlayout.widget.ConstraintLayout
+                android:id="@+id/mainContent"
+                android:layout_width="381dp"
+                android:layout_height="wrap_content"
+                android:background="#FFFFFF"
+                android:padding="16dp">
+
+                <androidx.cardview.widget.CardView
+                    android:id="@+id/imageCard"
+                    android:layout_width="90dp"
+                    android:layout_height="90dp"
+                    app:cardCornerRadius="4dp"
+                    app:cardElevation="0dp"
+                    app:layout_constraintBottom_toBottomOf="parent"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintTop_toTopOf="parent"
+                    app:layout_constraintVertical_bias="0">
+
+                    <ImageView
+                        android:id="@+id/ivProduct"
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        android:scaleType="centerCrop"
+                        android:src="@drawable/coffee_removebg_preview"
+                        android:contentDescription="@string/cart_description" />
+                </androidx.cardview.widget.CardView>
+
+                <TextView
+                    android:id="@+id/tvCategory"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="16dp"
+                    android:text="Category"
+                    android:textColor="#3E2723"
+                    android:textSize="12sp"
+                    android:textStyle="bold"
+                    app:layout_constraintStart_toEndOf="@id/imageCard"
+                    app:layout_constraintTop_toTopOf="@id/imageCard" />
+
+                <TextView
+                    android:id="@+id/tvProductName"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="2dp"
+                    android:text="Product Name"
+                    android:textColor="#000000"
+                    android:textSize="15sp"
+                    android:textStyle="bold"
+                    app:layout_constraintEnd_toStartOf="@+id/qtyControls"
+                    app:layout_constraintStart_toStartOf="@id/tvCategory"
+                    app:layout_constraintTop_toBottomOf="@id/tvCategory" />
+
+                <TextView
+                    android:id="@+id/tvDetails"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="2dp"
+                    android:text="Medium • 50% Sweet"
+                    android:textColor="#888888"
+                    android:textSize="12sp"
+                    app:layout_constraintEnd_toStartOf="@+id/qtyControls"
+                    app:layout_constraintStart_toStartOf="@id/tvCategory"
+                    app:layout_constraintTop_toBottomOf="@id/tvProductName" />
+
+                <TextView
+                    android:id="@+id/tvPrice"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="4dp"
+                    android:text="₱ 0.00"
+                    android:textColor="#3E2723"
+                    android:textSize="14sp"
+                    android:textStyle="bold"
+                    app:layout_constraintStart_toStartOf="@id/tvCategory"
+                    app:layout_constraintTop_toBottomOf="@id/tvDetails" />
+
+                <LinearLayout
+                    android:id="@+id/qtyControls"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:gravity="center"
+                    android:orientation="vertical"
+                    app:layout_constraintBottom_toBottomOf="parent"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintTop_toTopOf="parent">
+
+                    <TextView
+                        android:id="@+id/btnPlus"
+                        android:layout_width="40dp"
+                        android:layout_height="35dp"
+                        android:clickable="true"
+                        android:focusable="true"
+                        android:gravity="center"
+                        android:text="+"
+                        android:textColor="#3E2723"
+                        android:textSize="26sp" />
+
+                    <TextView
+                        android:id="@+id/tvQty"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="1"
+                        android:textColor="#000000"
+                        android:textSize="16sp"
+                        android:textStyle="bold" />
+
+                    <TextView
+                        android:id="@+id/btnMinus"
+                        android:layout_width="40dp"
+                        android:layout_height="35dp"
+                        android:clickable="true"
+                        android:focusable="true"
+                        android:gravity="center"
+                        android:text="—"
+                        android:textColor="#3E2723"
+                        android:textSize="20sp"
+                        android:textStyle="bold" />
+                </LinearLayout>
+
+            </androidx.constraintlayout.widget.ConstraintLayout>
+
+            <androidx.cardview.widget.CardView
+                android:id="@+id/btnDelete"
+                android:layout_width="90dp"
+                android:layout_height="match_parent"
+                android:layout_gravity="center_vertical"
+                app:cardBackgroundColor="#EF5350"
+                app:cardCornerRadius="0dp"
+                app:cardElevation="0dp"
+                android:clickable="true"
+                android:focusable="true">
+
+                <ImageView
+                    android:layout_width="35dp"
+                    android:layout_height="35dp"
+                    android:layout_gravity="center"
+                    android:src="@android:drawable/ic_menu_delete"
+                    android:contentDescription="@null"
+                    app:tint="#FFFFFF" />
+            </androidx.cardview.widget.CardView>
+
+        </LinearLayout>
+    </HorizontalScrollView>
+</androidx.cardview.widget.CardView>

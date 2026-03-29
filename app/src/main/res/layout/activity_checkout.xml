@@ -1,0 +1,599 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/main"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/accent_tan"
+    tools:context=".Checkout">
+
+    <!-- Top Bar -->
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:id="@+id/topBar"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:padding="16dp"
+        app:layout_constraintTop_toTopOf="parent">
+
+        <ImageView
+            android:id="@+id/btnBack"
+            android:layout_width="24dp"
+            android:layout_height="24dp"
+            android:background="?attr/selectableItemBackgroundBorderless"
+            android:clickable="true"
+            android:focusable="true"
+            android:src="@drawable/_45_6455265_left_curve_arrow_back_back_arrow_svg_hd_removebg_preview"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            app:tint="@color/dark_brown" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Checkout"
+            android:textColor="@color/dark_brown"
+            android:textSize="20sp"
+            android:textStyle="bold"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent" />
+    </androidx.constraintlayout.widget.ConstraintLayout>
+
+    <ScrollView
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:clipToPadding="false"
+        android:paddingBottom="100dp"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/topBar">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:padding="16dp">
+
+            <androidx.cardview.widget.CardView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="16dp"
+                app:cardCornerRadius="12dp"
+                app:cardElevation="2dp"
+                app:cardBackgroundColor="@color/bg_cream">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:padding="16dp">
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:gravity="center_vertical"
+                        android:orientation="horizontal">
+
+                        <TextView
+                            android:layout_width="24dp"
+                            android:layout_height="24dp"
+                            android:background="@drawable/bg_option_selected"
+                            android:gravity="center"
+                            android:text="1"
+                            android:textColor="@color/text_white_cream"
+                            android:textSize="12sp"
+                            android:textStyle="bold" />
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginStart="12dp"
+                            android:text="Contact &amp; Delivery Info"
+                            android:textColor="@color/dark_brown"
+                            android:textSize="16sp"
+                            android:textStyle="bold" />
+                    </LinearLayout>
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="16dp"
+                        android:text="FULL NAME"
+                        android:textColor="@color/dark_brown"
+                        android:textSize="10sp"
+                        android:textStyle="bold" />
+
+                    <EditText
+                        android:id="@+id/etFullName"
+                        android:layout_width="match_parent"
+                        android:layout_height="45dp"
+                        android:layout_marginTop="4dp"
+                        android:background="@drawable/edit_text_rounded"
+                        android:backgroundTint="@color/white"
+                        android:hint="User Name"
+                        android:paddingHorizontal="12dp"
+                        android:textColor="@color/dark_brown"
+                        android:textColorHint="#5D4037"
+                        android:textSize="13sp" />
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="12dp"
+                        android:text="CONTACT NUMBER"
+                        android:textColor="@color/dark_brown"
+                        android:textSize="10sp"
+                        android:textStyle="bold" />
+
+                    <EditText
+                        android:id="@+id/etContactNumber"
+                        android:layout_width="match_parent"
+                        android:layout_height="45dp"
+                        android:layout_marginTop="4dp"
+                        android:background="@drawable/edit_text_rounded"
+                        android:backgroundTint="@color/white"
+                        android:paddingHorizontal="12dp"
+                        android:textSize="13sp"
+                        android:hint="09123456789"
+                        android:textColor="@color/dark_brown"
+                        android:textColorHint="#5D4037" />
+
+                    <RadioGroup
+                        android:id="@+id/rgDeliveryMode"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="16dp"
+                        android:orientation="horizontal">
+
+                        <RadioButton
+                            android:id="@+id/btnDelivery"
+                            android:layout_width="0dp"
+                            android:layout_height="40dp"
+                            android:layout_marginEnd="8dp"
+                            android:layout_weight="1"
+                            android:background="@drawable/edit_text_rounded"
+                            android:backgroundTint="@color/white"
+                            android:buttonTint="@color/dark_brown"
+                            android:checked="true"
+                            android:paddingHorizontal="12dp"
+                            android:text="Delivery"
+                            android:textAllCaps="false"
+                            android:textColor="@color/dark_brown"
+                            android:textSize="12sp" />
+
+                        <RadioButton
+                            android:id="@+id/btnPickup"
+                            android:layout_width="0dp"
+                            android:layout_height="40dp"
+                            android:layout_weight="1"
+                            android:background="@drawable/edit_text_rounded"
+                            android:backgroundTint="@color/white"
+                            android:buttonTint="@color/dark_brown"
+                            android:paddingHorizontal="12dp"
+                            android:text="In-store Pickup"
+                            android:textAllCaps="false"
+                            android:textColor="@color/dark_brown"
+                            android:textSize="12sp" />
+                    </RadioGroup>
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="16dp"
+                        android:text="SAVED ADDRESS"
+                        android:textColor="@color/dark_brown"
+                        android:textSize="10sp"
+                        android:textStyle="bold" />
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="8dp"
+                        android:orientation="horizontal">
+
+                        <androidx.constraintlayout.widget.ConstraintLayout
+                            android:id="@+id/sectionAddress"
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_marginEnd="8dp"
+                            android:layout_weight="1"
+                            android:background="@drawable/edit_text_rounded"
+                            android:backgroundTint="@color/bg_cream"
+                            android:padding="8dp">
+
+                            <TextView
+                                android:id="@+id/tvAddressTitle"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="HOME"
+                                android:textColor="@color/dark_brown"
+                                android:textSize="11sp"
+                                android:textStyle="bold"
+                                app:layout_constraintStart_toStartOf="parent"
+                                app:layout_constraintTop_toTopOf="parent" />
+
+                            <TextView
+                                android:id="@+id/tvAddressDetails"
+                                android:layout_width="0dp"
+                                android:layout_height="wrap_content"
+                                android:layout_marginTop="4dp"
+                                android:ellipsize="end"
+                                android:maxLines="2"
+                                android:text="Loading address..."
+                                android:textColor="#5D4037"
+                                android:textSize="9sp"
+                                app:layout_constraintEnd_toEndOf="parent"
+                                app:layout_constraintStart_toStartOf="parent"
+                                app:layout_constraintTop_toBottomOf="@id/tvAddressTitle" />
+                        </androidx.constraintlayout.widget.ConstraintLayout>
+
+                        <LinearLayout
+                            android:id="@+id/btnAddAddress"
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            android:background="@drawable/edit_text_rounded"
+                            android:backgroundTint="@color/bg_cream"
+                            android:orientation="vertical"
+                            android:padding="8dp">
+
+                            <LinearLayout
+                                android:id="@+id/layoutAddAddressPlaceholder"
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:gravity="center"
+                                android:minHeight="40dp"
+                                android:orientation="horizontal">
+
+                                <ImageView
+                                    android:layout_width="14dp"
+                                    android:layout_height="14dp"
+                                    android:src="@android:drawable/ic_menu_add"
+                                    app:tint="@color/dark_brown" />
+
+                                <TextView
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:layout_marginStart="4dp"
+                                    android:text="Add New Address"
+                                    android:textColor="@color/dark_brown"
+                                    android:textSize="11sp"
+                                    android:textStyle="bold" />
+                            </LinearLayout>
+
+                            <LinearLayout
+                                android:id="@+id/layoutAlternativeDisplay"
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:orientation="vertical"
+                                android:visibility="gone">
+
+                                <TextView
+                                    android:id="@+id/tvAlternativeTitle"
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:text="ALTERNATIVE ADDRESS"
+                                    android:textColor="@color/dark_brown"
+                                    android:textSize="11sp"
+                                    android:textStyle="bold" />
+
+                                <TextView
+                                    android:id="@+id/tvAlternativeDetails"
+                                    android:layout_width="match_parent"
+                                    android:layout_height="wrap_content"
+                                    android:layout_marginTop="4dp"
+                                    android:text="Alternative Address Details"
+                                    android:textColor="#5D4037"
+                                    android:textSize="9sp" />
+                            </LinearLayout>
+                        </LinearLayout>
+                    </LinearLayout>
+
+                    <TextView
+                        android:id="@+id/tvDeliveryAddressLabel"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="16dp"
+                        android:text="DELIVERY ADDRESS"
+                        android:textColor="@color/dark_brown"
+                        android:textSize="10sp"
+                        android:textStyle="bold" />
+
+                    <TextView
+                        android:id="@+id/tvSelectedAddress"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="4dp"
+                        android:background="@drawable/edit_text_rounded"
+                        android:backgroundTint="@color/white"
+                        android:padding="12dp"
+                        android:text="User Address"
+                        android:textColor="@color/dark_brown"
+                        android:textSize="11sp" />
+                </LinearLayout>
+            </androidx.cardview.widget.CardView>
+
+            <!-- Section 2: Payment Method -->
+            <androidx.cardview.widget.CardView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="16dp"
+                app:cardCornerRadius="12dp"
+                app:cardElevation="2dp"
+                app:cardBackgroundColor="@color/bg_cream">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:padding="16dp">
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:gravity="center_vertical"
+                        android:orientation="horizontal">
+
+                        <TextView
+                            android:layout_width="24dp"
+                            android:layout_height="24dp"
+                            android:background="@drawable/bg_option_selected"
+                            android:gravity="center"
+                            android:text="2"
+                            android:textColor="@color/text_white_cream"
+                            android:textSize="12sp"
+                            android:textStyle="bold" />
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginStart="12dp"
+                            android:text="Payment Method"
+                            android:textColor="@color/dark_brown"
+                            android:textSize="16sp"
+                            android:textStyle="bold" />
+                    </LinearLayout>
+
+                    <RadioGroup
+                        android:id="@+id/rgPaymentMethod"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="16dp"
+                        android:orientation="horizontal">
+
+                        <RadioButton
+                            android:id="@+id/rbCod"
+                            android:layout_width="0dp"
+                            android:layout_height="56dp"
+                            android:layout_marginEnd="8dp"
+                            android:layout_weight="1"
+                            android:background="@drawable/edit_text_rounded"
+                            android:backgroundTint="@color/white"
+                            android:buttonTint="@color/dark_brown"
+                            android:checked="true"
+                            android:paddingHorizontal="12dp"
+                            android:text="Cash on Delivery"
+                            android:textColor="@color/dark_brown"
+                            android:textSize="10sp" />
+
+                        <RadioButton
+                            android:id="@+id/rbGcash"
+                            android:layout_width="0dp"
+                            android:layout_height="56dp"
+                            android:layout_weight="1"
+                            android:background="@drawable/edit_text_rounded"
+                            android:backgroundTint="@color/white"
+                            android:buttonTint="@color/dark_brown"
+                            android:paddingHorizontal="12dp"
+                            android:text="Gcash"
+                            android:textColor="@color/dark_brown"
+                            android:textSize="10sp" />
+                    </RadioGroup>
+
+                    <LinearLayout
+                        android:id="@+id/gcashDetailsContainer"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="16dp"
+                        android:orientation="horizontal"
+                        android:visibility="gone">
+
+                        <ImageView
+                            android:id="@+id/ivGcashQr"
+                            android:layout_width="120dp"
+                            android:layout_height="150dp"
+                            android:background="@drawable/rounded_card"
+                            android:backgroundTint="@color/accent_tan"
+                            android:scaleType="fitCenter"
+                            android:src="@drawable/f99f1428_cb13_4ad4_a8d6_3ae91d63f1e7" />
+
+                        <LinearLayout
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:layout_marginStart="16dp"
+                            android:orientation="vertical">
+
+                            <TextView
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="REFERENCE NUMBER"
+                                android:textColor="@color/dark_brown"
+                                android:textSize="10sp"
+                                android:textStyle="bold" />
+
+                            <EditText
+                                android:id="@+id/etReferenceNumber"
+                                android:layout_width="match_parent"
+                                android:layout_height="40dp"
+                                android:layout_marginTop="4dp"
+                                android:background="@drawable/edit_text_rounded"
+                                android:backgroundTint="@color/accent_tan"
+                                android:hint="Enter reference number"
+                                android:paddingHorizontal="12dp"
+                                android:textColor="@color/dark_brown"
+                                android:textColorHint="#5D4037"
+                                android:textSize="12sp" />
+
+                            <TextView
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:layout_marginTop="12dp"
+                                android:text="UPLOAD PAYMENT PROOF"
+                                android:textColor="@color/dark_brown"
+                                android:textSize="10sp"
+                                android:textStyle="bold" />
+
+                            <LinearLayout
+                                android:id="@+id/btnUploadProof"
+                                android:layout_width="match_parent"
+                                android:layout_height="100dp"
+                                android:layout_marginTop="4dp"
+                                android:background="@drawable/edit_text_rounded"
+                                android:backgroundTint="@color/accent_tan"
+                                android:gravity="center"
+                                android:orientation="vertical"
+                                android:padding="8dp">
+
+                                <LinearLayout
+                                    android:id="@+id/layoutUploadPlaceholder"
+                                    android:layout_width="match_parent"
+                                    android:layout_height="match_parent"
+                                    android:gravity="center"
+                                    android:orientation="vertical">
+                                    <TextView
+                                        android:id="@+id/tvUploadStatus"
+                                        android:layout_width="wrap_content"
+                                        android:layout_height="wrap_content"
+                                        android:gravity="center"
+                                        android:text="Click to upload proof of payment\nPNG / JPG up to 5MB"
+                                        android:textColor="#5D4037"
+                                        android:textSize="10sp" />
+                                </LinearLayout>
+
+                                <LinearLayout
+                                    android:id="@+id/layoutImagePreview"
+                                    android:layout_width="match_parent"
+                                    android:layout_height="match_parent"
+                                    android:visibility="gone"
+                                    android:orientation="vertical"
+                                    android:gravity="center">
+
+                                    <ImageView
+                                        android:id="@+id/ivProofPreview"
+                                        android:layout_width="match_parent"
+                                        android:layout_height="0dp"
+                                        android:layout_weight="1"
+                                        android:scaleType="fitCenter"/>
+
+                                    <LinearLayout
+                                        android:layout_width="wrap_content"
+                                        android:layout_height="wrap_content"
+                                        android:layout_marginTop="4dp"
+                                        android:orientation="horizontal">
+                                        <TextView
+                                            android:id="@+id/btnChangePhoto"
+                                            android:layout_width="wrap_content"
+                                            android:layout_height="wrap_content"
+                                            android:text="Change"
+                                            android:textColor="@color/dark_brown"
+                                            android:textSize="11sp"
+                                            android:textStyle="bold"
+                                            android:padding="4dp"
+                                            android:clickable="true"
+                                            android:focusable="true"/>
+                                        <TextView
+                                            android:layout_width="wrap_content"
+                                            android:layout_height="wrap_content"
+                                            android:text=" | "
+                                            android:textColor="#CCCCCC"/>
+                                        <TextView
+                                            android:id="@+id/btnRemovePhoto"
+                                            android:layout_width="wrap_content"
+                                            android:layout_height="wrap_content"
+                                            android:text="Remove"
+                                            android:textColor="#FF0000"
+                                            android:textSize="11sp"
+                                            android:textStyle="bold"
+                                            android:padding="4dp"
+                                            android:clickable="true"
+                                            android:focusable="true"/>
+                                    </LinearLayout>
+                                </LinearLayout>
+                            </LinearLayout>
+                        </LinearLayout>
+                    </LinearLayout>
+
+                    <LinearLayout android:id="@+id/walletDetailsContainer" android:layout_width="0dp" android:layout_height="0dp" android:visibility="gone"/>
+                    <TextView android:id="@+id/tvPaymentTitle" android:layout_width="0dp" android:layout_height="0dp" android:visibility="gone"/>
+                    <TextView android:id="@+id/tvPaymentHint" android:layout_width="0dp" android:layout_height="0dp" android:visibility="gone"/>
+
+                </LinearLayout>
+            </androidx.cardview.widget.CardView>
+
+            <!-- Order Summary -->
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Order Summary"
+                android:textColor="@color/dark_brown"
+                android:textStyle="bold" />
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="8dp"
+                android:background="@drawable/rounded_card"
+                android:backgroundTint="@color/bg_cream"
+                android:orientation="vertical"
+                android:padding="16dp">
+
+                <RelativeLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content">
+                    <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Subtotal" android:textColor="@color/dark_brown" />
+                    <TextView android:id="@+id/tvSummarySubtotal" android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_alignParentEnd="true" android:text="₱ 0.00" android:textStyle="bold" android:textColor="@color/dark_brown" />
+                </RelativeLayout>
+
+                <RelativeLayout
+                    android:id="@+id/layoutShippingFee"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="8dp">
+                    <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Shipping Fee" android:textColor="@color/dark_brown" />
+                    <TextView android:id="@+id/tvSummaryShipping" android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_alignParentEnd="true" android:text="₱ 10.00" android:textStyle="bold" android:textColor="@color/dark_brown" />
+                </RelativeLayout>
+
+                <View
+                    android:layout_width="match_parent"
+                    android:layout_height="1dp"
+                    android:layout_marginTop="12dp"
+                    android:background="@color/accent_tan" />
+
+                <RelativeLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="12dp">
+                    <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Total" android:textColor="@color/dark_brown" android:textSize="18sp" android:textStyle="bold" />
+                    <TextView android:id="@+id/tvSummaryTotal" android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_alignParentEnd="true" android:text="₱ 0.00" android:textColor="@color/dark_brown" android:textSize="18sp" android:textStyle="bold" />
+                </RelativeLayout>
+            </LinearLayout>
+
+        </LinearLayout>
+    </ScrollView>
+
+    <androidx.appcompat.widget.AppCompatButton
+        android:id="@+id/btnPlaceOrder"
+        android:layout_width="match_parent"
+        android:layout_height="50dp"
+        android:layout_margin="12dp"
+        android:background="@drawable/bg_option_selected"
+        android:text="Place Order"
+        android:textAllCaps="false"
+        android:textColor="@color/text_white_cream"
+        android:textSize="18sp"
+        android:textStyle="bold"
+        app:layout_constraintBottom_toBottomOf="parent" />
+
+</androidx.constraintlayout.widget.ConstraintLayout>

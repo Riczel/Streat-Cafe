@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "831711253011",
+    "project_id": "streat-cafe",
+    "storage_bucket": "streat-cafe.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:831711253011:android:bcf05e5ff825f8e34f25e6",
+        "android_client_info": {
+          "package_name": "com.example.streat_cafe"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAfooSgyz-GbBiZD8pU44dxmrIjAX9Wn9Q"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
