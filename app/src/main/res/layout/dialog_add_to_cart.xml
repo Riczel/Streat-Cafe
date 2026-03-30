@@ -36,7 +36,7 @@
                 android:backgroundTint="#80000000"
                 android:padding="6dp"
                 android:src="@android:drawable/ic_menu_close_clear_cancel"
-                app:tint="#FFFFFF"
+                app:tint="#FFFEFE"
                 android:clickable="true"
                 android:focusable="true"
                 android:contentDescription="Close" />

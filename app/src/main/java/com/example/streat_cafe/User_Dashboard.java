@@ -43,19 +43,16 @@ public class User_Dashboard extends AppCompatActivity {
     private String authToken;
     private SwipeRefreshLayout swipeRefreshLayout;
 
-    // Weather Views
     private CardView cardWeather, cardNoAddress;
     private TextView tvWeatherTemp, tvWeatherMessage, tvRecommendedDrink;
-    private ImageView ivWeatherIcon;
+    private ImageView ivWeatherIcon, btnNotifications;
 
-    // WeatherAPI.com details
     private static final String WEATHER_API_KEY = "81979e8387214be6b1f143510262703";
     private static final String WEATHER_BASE_URL = "https://api.weatherapi.com/v1/";
     private static final String TAG = "STREAT_WEATHER";
 
     public interface WeatherService {
-        @GET("current.json")
-        Call<JsonObject> getCurrentWeather(@Query("key") String apiKey, @Query("q") String query, @Query("aqi") String aqi);
+        @GET("current.json") Call<JsonObject> getCurrentWeather(@Query("key") String apiKey, @Query("q") String query, @Query("aqi") String aqi);
     }
 
     @Override
@@ -63,9 +60,9 @@ public class User_Dashboard extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         EdgeToEdge.enable(this);
         setContentView(R.layout.activity_user_dashboard);
-        
+
         apiInterface = RetrofitClient.getClient().create(ApiInterface.class);
-        
+
         heyName = findViewById(R.id.tvHeyName);
         swipeRefreshLayout = findViewById(R.id.swipeRefreshLayout);
         CardView cardLocation = findViewById(R.id.cardLocation);
@@ -75,8 +72,8 @@ public class User_Dashboard extends AppCompatActivity {
         navMenu = findViewById(R.id.navMenu);
         navOrders = findViewById(R.id.navOrders);
         navHome = findViewById(R.id.navHome);
+        btnNotifications = findViewById(R.id.btnNotifications);
 
-        // Weather View Initialization
         cardWeather = findViewById(R.id.cardWeather);
         cardNoAddress = findViewById(R.id.cardNoAddress);
         tvWeatherTemp = findViewById(R.id.tvWeatherTemp);
@@ -121,7 +118,7 @@ public class User_Dashboard extends AppCompatActivity {
                 startActivity(intent);
             });
         }
-        
+
         if (btnTryFeatures != null) {
             btnTryFeatures.setOnClickListener(v -> navigateTo(User_Profile.class));
         }
@@ -131,6 +128,10 @@ public class User_Dashboard extends AppCompatActivity {
         }
         if (cardFBPage != null) {
             cardFBPage.setOnClickListener(v -> openUrl("https://www.facebook.com/profile.php?id=100087261280704"));
+        }
+
+        if (btnNotifications != null) {
+            btnNotifications.setOnClickListener(v -> navigateTo(Notifications.class));
         }
 
         setupNavigation();
@@ -151,7 +152,7 @@ public class User_Dashboard extends AppCompatActivity {
     protected void onResume() {
         super.onResume();
         if (!authToken.isEmpty()) {
-            fetchUserProfile(); 
+            fetchUserProfile();
         }
     }
 
@@ -167,7 +168,7 @@ public class User_Dashboard extends AppCompatActivity {
 
                     String city = "";
                     String province = "";
-                    
+
                     if (profile.has("addresses") && profile.get("addresses").isJsonArray()) {
                         JsonArray addresses = profile.getAsJsonArray("addresses");
                         for (JsonElement e : addresses) {
@@ -181,7 +182,7 @@ public class User_Dashboard extends AppCompatActivity {
                             }
                         }
                     }
-                    
+
                     if (city.isEmpty() && profile.has("municipality") && !profile.get("municipality").isJsonNull()) {
                         city = profile.get("municipality").getAsString().trim();
                         province = profile.has("province") ? profile.get("province").getAsString().trim() : "";
@@ -208,14 +209,14 @@ public class User_Dashboard extends AppCompatActivity {
     private void fetchWeather(String city, String province) {
         tvWeatherTemp.setText("--°C");
         tvWeatherMessage.setText("Finding weather for " + city + "...");
-        
+
         Retrofit retrofit = new Retrofit.Builder()
                 .baseUrl(WEATHER_BASE_URL)
                 .addConverterFactory(GsonConverterFactory.create())
                 .build();
 
         WeatherService service = retrofit.create(WeatherService.class);
-        
+
         String query = city + (province.isEmpty() ? "" : ", " + province);
 
         service.getCurrentWeather(WEATHER_API_KEY, query, "no").enqueue(new Callback<JsonObject>() {
@@ -256,7 +257,7 @@ public class User_Dashboard extends AppCompatActivity {
                     tvWeatherMessage.setText("Location not recognized");
                 }
             }
-            @Override public void onFailure(@NonNull Call<JsonObject> call, @NonNull Throwable t) { 
+            @Override public void onFailure(@NonNull Call<JsonObject> call, @NonNull Throwable t) {
                 tvWeatherMessage.setText("Connection failed");
             }
         });
@@ -268,7 +269,7 @@ public class User_Dashboard extends AppCompatActivity {
             double temp = current.get("temp_c").getAsDouble();
             String condition = "Clear";
             String iconUrl = "";
-            
+
             if (current.has("condition")) {
                 JsonObject condObj = current.getAsJsonObject("condition");
                 condition = condObj.get("text").getAsString();
@@ -283,7 +284,7 @@ public class User_Dashboard extends AppCompatActivity {
 
     private void updateWeatherUI(double temp, String condition, String iconUrl) {
         tvWeatherTemp.setText(String.format(Locale.getDefault(), "%.0f°C %s", temp, condition));
-        
+
         if (iconUrl != null && !iconUrl.isEmpty() && ivWeatherIcon != null) {
             Glide.with(this).load(iconUrl).placeholder(R.drawable.weather_svgrepo_com).into(ivWeatherIcon);
         }

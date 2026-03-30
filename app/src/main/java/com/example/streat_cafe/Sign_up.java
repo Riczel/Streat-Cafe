@@ -50,7 +50,6 @@ public class Sign_up extends AppCompatActivity {
 
         apiInterface = RetrofitClient.getClient().create(ApiInterface.class);
 
-        // Configure Google Sign-In
         GoogleSignInOptions gso = new GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
                 .requestServerAuthCode(getString(R.string.google_web_client_id))
                 .requestEmail()
@@ -114,6 +113,7 @@ public class Sign_up extends AppCompatActivity {
     private void sendCodeToBackend(String code) {
         JsonObject body = new JsonObject();
         body.addProperty("code", code);
+        body.addProperty("type", "register");
 
         googleSignUpButton.setEnabled(false);
         apiInterface.loginWithGoogle(body).enqueue(new Callback<JsonObject>() {
@@ -121,7 +121,8 @@ public class Sign_up extends AppCompatActivity {
             public void onResponse(@NonNull Call<JsonObject> call, @NonNull Response<JsonObject> response) {
                 googleSignUpButton.setEnabled(true);
                 if (response.isSuccessful() && response.body() != null) {
-                    handleSuccessResponse(response.body(), response.code());
+                    Log.d("SignUp", "Response: " + response.body().toString());
+                    handleSuccessResponse(response.body());
                 } else {
                     handleErrorResponse(response);
                 }
@@ -135,45 +136,27 @@ public class Sign_up extends AppCompatActivity {
         });
     }
 
-    private void handleSuccessResponse(JsonObject body, int statusCode) {
-        // Improved detection: Check isNewUser, newUser, response code, and message
-        boolean isNew = false;
+    private void handleSuccessResponse(JsonObject body) {
+        boolean isNew = true; 
+        
         if (body.has("isNewUser")) {
             isNew = body.get("isNewUser").getAsBoolean();
         } else if (body.has("newUser")) {
             isNew = body.get("newUser").getAsBoolean();
-        } else if (statusCode == 201) {
-            isNew = true;
-        } else if (body.has("message")) {
-            String msg = body.get("message").getAsString().toLowerCase();
-            if (msg.contains("created") || msg.contains("registered") || msg.contains("sign up")) {
-                isNew = true;
-            } else if (msg.contains("login") || msg.contains("welcome back")) {
-                isNew = false;
-            } else {
-                // Default to true for sign-up flow if ambiguous
-                isNew = true; 
-            }
-        } else {
-            // Default to true if no other indicators found
-            isNew = true;
+        } else if (body.has("isNew")) {
+            isNew = body.get("isNew").getAsBoolean();
         }
-        
+
         if (!isNew) {
             Toast.makeText(this, "This account already exists. Please sign in instead.", Toast.LENGTH_LONG).show();
             mGoogleSignInClient.signOut();
             return;
         }
 
-        // Proceed only for new accounts
-        String token = body.has("token") ? body.get("token").getAsString() : "";
-        String email = body.has("user") ? body.getAsJsonObject("user").get("email").getAsString() : "";
-        
-        saveSession(email, token, body.has("role") ? body.get("role").getAsString() : "user");
-
-        Toast.makeText(this, "Account Created Successfully!", Toast.LENGTH_SHORT).show();
-        startActivity(new Intent(this, User_Dashboard.class));
-        finishAffinity();
+        Toast.makeText(this, "Account Created Successfully! Please Sign In.", Toast.LENGTH_SHORT).show();
+        mGoogleSignInClient.signOut();
+        startActivity(new Intent(this, Sign_in.class));
+        finish();
     }
 
     private void handleErrorResponse(Response<JsonObject> response) {
@@ -194,22 +177,43 @@ public class Sign_up extends AppCompatActivity {
 
     private void validateAndSignUp() {
         String email = emailField.getText().toString().trim();
-        if (!Patterns.EMAIL_ADDRESS.matcher(email).matches()) {
+        String firstName = firstNameField.getText().toString().trim();
+        String lastName = lastNameField.getText().toString().trim();
+        String password = passwordField.getText().toString().trim();
+        String confirmPassword = confirmPasswordField.getText().toString().trim();
+
+        if (TextUtils.isEmpty(email) || !Patterns.EMAIL_ADDRESS.matcher(email).matches()) {
             emailField.setError("Valid email required");
             return;
         }
+
+        if (TextUtils.isEmpty(firstName)) {
+            firstNameField.setError("First name is required");
+            return;
+        }
+
+        if (TextUtils.isEmpty(password)) {
+            passwordField.setError("Password is required");
+            return;
+        }
+
+        if (!password.equals(confirmPassword)) {
+            confirmPasswordField.setError("Passwords do not match");
+            return;
+        }
         
-        // Manual form submission
         JsonObject userDetails = new JsonObject();
         userDetails.addProperty("email", email);
-        userDetails.addProperty("firstName", firstNameField.getText().toString().trim());
-        userDetails.addProperty("lastName", lastNameField.getText().toString().trim());
+        userDetails.addProperty("firstName", firstName);
+        userDetails.addProperty("lastName", lastName);
         userDetails.addProperty("phoneNumber", phoneField.getText().toString().trim());
-        userDetails.addProperty("password", passwordField.getText().toString().trim());
+        userDetails.addProperty("password", password);
 
+        signUpButton.setEnabled(false);
         apiInterface.registerUser(userDetails).enqueue(new Callback<JsonObject>() {
             @Override
             public void onResponse(@NonNull Call<JsonObject> call, @NonNull Response<JsonObject> response) {
+                signUpButton.setEnabled(true);
                 if (response.isSuccessful()) {
                     Toast.makeText(Sign_up.this, "Account Created! Please Sign In.", Toast.LENGTH_SHORT).show();
                     startActivity(new Intent(Sign_up.this, Sign_in.class));
@@ -219,6 +223,7 @@ public class Sign_up extends AppCompatActivity {
                 }
             }
             @Override public void onFailure(@NonNull Call<JsonObject> call, @NonNull Throwable t) {
+                signUpButton.setEnabled(true);
                 Toast.makeText(Sign_up.this, "Network error", Toast.LENGTH_SHORT).show();
             }
         });

@@ -1,11 +1,15 @@
 package com.example.streat_cafe;
 
+import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.graphics.Bitmap;
 import android.net.Uri;
 import android.os.Bundle;
 import android.provider.MediaStore;
+import android.text.InputFilter;
+import android.text.InputType;
+import android.text.Spanned;
 import android.util.Base64;
 import android.util.Log;
 import android.view.View;
@@ -21,6 +25,7 @@ import android.widget.Toast;
 import androidx.activity.EdgeToEdge;
 import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
+import androidx.annotation.NonNull;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.graphics.Insets;
@@ -35,9 +40,11 @@ import com.google.android.gms.auth.api.signin.GoogleSignInOptions;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
+import com.google.gson.JsonParser;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.util.Locale;
 
 import retrofit2.Call;
 import retrofit2.Callback;
@@ -148,40 +155,11 @@ public class User_Profile extends AppCompatActivity {
         etAltMunicipality.setEnabled(false);
         etAltProvince.setEnabled(false);
 
-        ArrayAdapter<String> adapter = new ArrayAdapter<>(this, android.R.layout.simple_dropdown_item_1line, barangays);
-        etBarangay.setAdapter(adapter);
-        etAltBarangay.setAdapter(adapter);
+        // Apply Input Filters for Validation
+        applyInputFilters();
 
-        etBarangay.setOnClickListener(v -> {
-            if (etBarangay.isEnabled()) etBarangay.showDropDown();
-        });
-        etAltBarangay.setOnClickListener(v -> {
-            if (etAltBarangay.isEnabled()) etAltBarangay.showDropDown();
-        });
-
-        btnAddAddress.setOnClickListener(v -> {
-            btnAddAddress.setVisibility(View.GONE);
-            layoutAlternativeAddress.setVisibility(View.VISIBLE);
-            enableAltFields(true);
-        });
-
-        btnCancelAlt.setOnClickListener(v -> {
-            if (hasAltAddress) {
-                enableAltFields(false);
-                loadUserData();
-            } else {
-                layoutAlternativeAddress.setVisibility(View.GONE);
-                updateAddAddressButtonVisibility();
-                clearAltFields();
-                isEditingAlt = false;
-            }
-        });
-
-        btnSaveAlt.setOnClickListener(v -> saveProfileChanges(true));
-
-        btnEditAlt.setOnClickListener(v -> enableAltFields(true));
-        
-        btnDeleteAlt.setOnClickListener(v -> deleteAlternativeAddress());
+        setupClickListeners();
+        setupPickImageLauncher();
 
         ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.main), (v, insets) -> {
             Insets systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars());
@@ -189,112 +167,160 @@ public class User_Profile extends AppCompatActivity {
             return insets;
         });
 
-        btnEditPersonal.setOnClickListener(v -> enableEditing(true));
-        btnEditAddress.setOnClickListener(v -> enableEditing(true));
-
-        btnCancel.setOnClickListener(v -> {
-            enableEditing(false);
-            loadUserData(); 
-        });
-
-        btnSave.setOnClickListener(v -> saveProfileChanges(false));
-
-        btnSignOut.setOnClickListener(v -> {
-            // Sign out from Google
-            GoogleSignInOptions gso = new GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN).build();
-            GoogleSignInClient mGoogleSignInClient = GoogleSignIn.getClient(User_Profile.this, gso);
-            mGoogleSignInClient.signOut().addOnCompleteListener(task -> {
-                SharedPreferences.Editor editor = sharedPreferences.edit();
-                editor.clear();
-                editor.apply();
-                startActivity(new Intent(User_Profile.this, Sign_in.class));
-                finishAffinity();
-            });
-        });
-
-        btnMyCart.setOnClickListener(v -> navigateTo(Cart.class));
-
-        if (btnRecentOrders != null) {
-            btnRecentOrders.setOnClickListener(v -> {
-                Intent intent = new Intent(User_Profile.this, RecentOrders.class);
-                startActivity(intent);
-            });
-        }
-
+        setupBarangayDropdown();
+        setupNavigation();
+        
         if (swipeRefreshLayout != null) {
             swipeRefreshLayout.setOnRefreshListener(this::loadUserData);
         }
+    }
 
-        pickImageLauncher = registerForActivityResult(
-                new ActivityResultContracts.StartActivityForResult(),
-                result -> {
-                    if (result.getResultCode() == RESULT_OK && result.getData() != null) {
-                        Uri imageUri = result.getData().getData();
-                        if (imageUri != null) {
-                            uploadProfilePicture(imageUri);
-                        }
-                    }
-                    layoutPicOptions.setVisibility(View.GONE);
+    private void applyInputFilters() {
+        // Filter for Name fields: Only allow letters and spaces
+        InputFilter nameFilter = (source, start, end, dest, dstart, dend) -> {
+            for (int i = start; i < end; i++) {
+                char charAt = source.charAt(i);
+                if (!Character.isLetter(charAt) && !Character.isSpaceChar(charAt)) {
+                    return "";
                 }
-        );
+            }
+            return null;
+        };
+
+        etFirstName.setFilters(new InputFilter[]{nameFilter});
+        etLastName.setFilters(new InputFilter[]{nameFilter});
+
+        // Filter for Phone Number: Numeric only, limit to 11 digits
+        etPhoneNumber.setFilters(new InputFilter[]{new InputFilter.LengthFilter(11)});
+        etPhoneNumber.setInputType(InputType.TYPE_CLASS_NUMBER);
+    }
+
+    private void setupBarangayDropdown() {
+        ArrayAdapter<String> adapter = new ArrayAdapter<>(this, android.R.layout.simple_dropdown_item_1line, barangays);
+        etBarangay.setAdapter(adapter);
+        etAltBarangay.setAdapter(adapter);
+        
+        etBarangay.setOnClickListener(v -> {
+            if (etBarangay.isEnabled()) etBarangay.showDropDown();
+        });
+        etAltBarangay.setOnClickListener(v -> {
+            if (etAltBarangay.isEnabled()) etAltBarangay.showDropDown();
+        });
+    }
+
+    private void setupClickListeners() {
+        btnEditPersonal.setOnClickListener(v -> enableEditing(true));
+        btnEditAddress.setOnClickListener(v -> enableEditing(true));
+        btnCancel.setOnClickListener(v -> {
+            enableEditing(false);
+            loadUserData();
+        });
+        btnSave.setOnClickListener(v -> saveProfileChanges(false));
+
+        btnAddAddress.setOnClickListener(v -> {
+            layoutAlternativeAddress.setVisibility(View.VISIBLE);
+            btnAddAddress.setVisibility(View.GONE);
+            clearAltFields();
+            enableAltFields(true);
+        });
+
+        btnEditAlt.setOnClickListener(v -> enableAltFields(true));
+        btnDeleteAlt.setOnClickListener(v -> deleteAlternativeAddress());
+        btnCancelAlt.setOnClickListener(v -> {
+            enableAltFields(false);
+            if (!hasAltAddress) layoutAlternativeAddress.setVisibility(View.GONE);
+            loadUserData();
+        });
+        btnSaveAlt.setOnClickListener(v -> saveProfileChanges(true));
+
+        btnSignOut.setOnClickListener(v -> signOut());
+        btnMyCart.setOnClickListener(v -> navigateTo(Cart.class));
+        btnRecentOrders.setOnClickListener(v -> navigateTo(RecentOrders.class));
 
         btnChangePic.setOnClickListener(v -> {
-            if (currentProfilePicUrl == null || currentProfilePicUrl.isEmpty()) {
-                Intent intent = new Intent(Intent.ACTION_PICK, MediaStore.Images.Media.EXTERNAL_CONTENT_URI);
-                pickImageLauncher.launch(intent);
+            if (layoutPicOptions.getVisibility() == View.VISIBLE) {
+                layoutPicOptions.setVisibility(View.GONE);
             } else {
-                if (layoutPicOptions.getVisibility() == View.VISIBLE) {
-                    layoutPicOptions.setVisibility(View.GONE);
-                } else {
-                    layoutPicOptions.setVisibility(View.VISIBLE);
-                }
+                layoutPicOptions.setVisibility(View.VISIBLE);
             }
         });
 
         btnPicChange.setOnClickListener(v -> {
-            new AlertDialog.Builder(User_Profile.this)
-                    .setTitle("Confirmation")
-                    .setMessage("Are you want to change your profile?")
-                    .setPositiveButton("Yes", (dialog, which) -> {
-                        Intent intent = new Intent(Intent.ACTION_PICK, MediaStore.Images.Media.EXTERNAL_CONTENT_URI);
-                        pickImageLauncher.launch(intent);
-                    })
-                    .setNegativeButton("No", (dialog, which) -> layoutPicOptions.setVisibility(View.GONE))
-                    .show();
+            Intent intent = new Intent(Intent.ACTION_PICK, MediaStore.Images.Media.EXTERNAL_CONTENT_URI);
+            pickImageLauncher.launch(intent);
+            layoutPicOptions.setVisibility(View.GONE);
         });
 
         btnPicRemove.setOnClickListener(v -> {
-            new AlertDialog.Builder(User_Profile.this)
-                    .setTitle("Confirmation")
-                    .setMessage("Are you want to delete you profile?")
-                    .setPositiveButton("Yes", (dialog, which) -> {
-                        removeProfilePicture();
-                        layoutPicOptions.setVisibility(View.GONE);
-                    })
-                    .setNegativeButton("No", (dialog, which) -> layoutPicOptions.setVisibility(View.GONE))
-                    .show();
+            removeProfilePicture();
+            layoutPicOptions.setVisibility(View.GONE);
         });
+    }
 
-        setupNavigation();
-        loadUserData();
+    private void setupPickImageLauncher() {
+        pickImageLauncher = registerForActivityResult(
+                new ActivityResultContracts.StartActivityForResult(),
+                result -> {
+                    if (result.getResultCode() == RESULT_OK && result.getData() != null) {
+                        Uri selectedImage = result.getData().getData();
+                        if (selectedImage != null) {
+                            uploadProfilePicture(selectedImage);
+                        }
+                    }
+                }
+        );
+    }
+
+    private void uploadProfilePicture(Uri imageUri) {
+        try {
+            Bitmap bitmap = MediaStore.Images.Media.getBitmap(this.getContentResolver(), imageUri);
+            ByteArrayOutputStream baos = new ByteArrayOutputStream();
+            bitmap.compress(Bitmap.CompressFormat.JPEG, 70, baos);
+            byte[] imageBytes = baos.toByteArray();
+            String base64Image = "data:image/jpeg;base64," + Base64.encodeToString(imageBytes, Base64.DEFAULT);
+
+            JsonObject payload = new JsonObject();
+            payload.addProperty("profilePicture", base64Image);
+
+            if (authToken == null || authToken.isEmpty()) return;
+
+            apiInterface.updateProfile("Bearer " + authToken, payload).enqueue(new Callback<JsonObject>() {
+                @Override
+                public void onResponse(Call<JsonObject> call, Response<JsonObject> response) {
+                    if (response.isSuccessful()) {
+                        Toast.makeText(User_Profile.this, "Profile picture updated", Toast.LENGTH_SHORT).show();
+                        loadUserData();
+                    } else {
+                        Toast.makeText(User_Profile.this, "Failed to upload image", Toast.LENGTH_SHORT).show();
+                    }
+                }
+
+                @Override
+                public void onFailure(Call<JsonObject> call, Throwable t) {
+                    Toast.makeText(User_Profile.this, "Network error", Toast.LENGTH_SHORT).show();
+                }
+            });
+
+        } catch (IOException e) {
+            e.printStackTrace();
+            Toast.makeText(this, "Error processing image", Toast.LENGTH_SHORT).show();
+        }
     }
 
     private void removeProfilePicture() {
-        if (authToken == null || authToken.isEmpty()) return;
-        
         JsonObject payload = new JsonObject();
-        payload.addProperty("profilePicture", " ");
+        payload.addProperty("profilePicture", "");
+
+        if (authToken == null || authToken.isEmpty()) return;
 
         apiInterface.updateProfile("Bearer " + authToken, payload).enqueue(new Callback<JsonObject>() {
             @Override
             public void onResponse(Call<JsonObject> call, Response<JsonObject> response) {
                 if (response.isSuccessful()) {
-                    Toast.makeText(User_Profile.this, "Profile picture deleted", Toast.LENGTH_SHORT).show();
-                    ivProfilePic.setImageResource(R.drawable.istockphoto_1225790722_612x612_removebg_preview);
-                    currentProfilePicUrl = "";
+                    Toast.makeText(User_Profile.this, "Profile picture removed", Toast.LENGTH_SHORT).show();
                     loadUserData();
                 } else {
-                    Toast.makeText(User_Profile.this, "Failed to delete", Toast.LENGTH_SHORT).show();
+                    Toast.makeText(User_Profile.this, "Failed to remove image", Toast.LENGTH_SHORT).show();
                 }
             }
 
@@ -305,54 +331,20 @@ public class User_Profile extends AppCompatActivity {
         });
     }
 
-    private void uploadProfilePicture(Uri imageUri) {
-        try {
-            Bitmap bitmap = MediaStore.Images.Media.getBitmap(getContentResolver(), imageUri);
-            
+    private void signOut() {
+        SharedPreferences sharedPreferences = getSharedPreferences("UserSession", MODE_PRIVATE);
+        SharedPreferences.Editor editor = sharedPreferences.edit();
+        editor.clear();
+        editor.apply();
 
-            int maxWidth = 400;
-            int maxHeight = 400;
-            if (bitmap.getWidth() > maxWidth || bitmap.getHeight() > maxHeight) {
-                float scale = Math.min((float) maxWidth / bitmap.getWidth(), (float) maxHeight / bitmap.getHeight());
-                bitmap = Bitmap.createScaledBitmap(bitmap, Math.round(scale * bitmap.getWidth()), Math.round(scale * bitmap.getHeight()), true);
-            }
-
-            ByteArrayOutputStream baos = new ByteArrayOutputStream();
-            bitmap.compress(Bitmap.CompressFormat.JPEG, 70, baos);
-            byte[] imageBytes = baos.toByteArray();
-            String base64Image = Base64.encodeToString(imageBytes, Base64.DEFAULT);
-
-            JsonObject payload = new JsonObject();
-            payload.addProperty("profilePicture", "data:image/jpeg;base64," + base64Image);
-
-            apiInterface.updateProfile("Bearer " + authToken, payload).enqueue(new Callback<JsonObject>() {
-                @Override
-                public void onResponse(Call<JsonObject> call, Response<JsonObject> response) {
-                    if (response.isSuccessful()) {
-                        Toast.makeText(User_Profile.this, "Profile picture updated", Toast.LENGTH_SHORT).show();
-                        // Update local UI immediately
-                        Glide.with(User_Profile.this)
-                                .load(imageBytes)
-                                .placeholder(R.drawable.istockphoto_1225790722_612x612_removebg_preview)
-                                .circleCrop()
-                                .into(ivProfilePic);
-                        currentProfilePicUrl = "has_image";
-                        loadUserData();
-                    } else {
-                        Toast.makeText(User_Profile.this, "Failed to upload image", Toast.LENGTH_SHORT).show();
-                    }
-                }
-
-                @Override
-                public void onFailure(Call<JsonObject> call, Throwable t) {
-                    Toast.makeText(User_Profile.this, "Network error: " + t.getMessage(), Toast.LENGTH_SHORT).show();
-                }
-            });
-
-        } catch (IOException e) {
-            e.printStackTrace();
-            Toast.makeText(this, "Error processing image", Toast.LENGTH_SHORT).show();
-        }
+        GoogleSignInOptions gso = new GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN).build();
+        GoogleSignInClient googleSignInClient = GoogleSignIn.getClient(this, gso);
+        googleSignInClient.signOut().addOnCompleteListener(task -> {
+            Intent intent = new Intent(User_Profile.this, Sign_in.class);
+            intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
+            startActivity(intent);
+            finish();
+        });
     }
 
     private void clearAltFields() {
@@ -434,18 +426,37 @@ public class User_Profile extends AppCompatActivity {
         boolean isValid = true;
         
         if (!isAlt) {
-            if (etFirstName.getText().toString().trim().isEmpty()) {
+            String firstName = etFirstName.getText().toString().trim();
+            String lastName = etLastName.getText().toString().trim();
+            String phone = etPhoneNumber.getText().toString().trim();
+
+            if (firstName.isEmpty()) {
                 etFirstName.setError("Required");
                 isValid = false;
+            } else if (!firstName.matches("[a-zA-Z\\s]+")) {
+                etFirstName.setError("Only letters allowed");
+                isValid = false;
             }
-            if (etLastName.getText().toString().trim().isEmpty()) {
+
+            if (lastName.isEmpty()) {
                 etLastName.setError("Required");
                 isValid = false;
-            }
-            if (etPhoneNumber.getText().toString().trim().isEmpty()) {
-                etPhoneNumber.setError("Required");
+            } else if (!lastName.matches("[a-zA-Z\\s]+")) {
+                etLastName.setError("Only letters allowed");
                 isValid = false;
             }
+
+            if (phone.isEmpty()) {
+                etPhoneNumber.setError("Required");
+                isValid = false;
+            } else if (phone.length() != 11) {
+                etPhoneNumber.setError("Must be 11 digits");
+                isValid = false;
+            } else if (!phone.startsWith("09")) {
+                etPhoneNumber.setError("Must start with 09");
+                isValid = false;
+            }
+
             if (etHouseNo.getText().toString().trim().isEmpty()) {
                 etHouseNo.setError("Required");
                 isValid = false;
@@ -481,7 +492,7 @@ public class User_Profile extends AppCompatActivity {
         }
         
         if (!isValid) {
-            Toast.makeText(this, "Please fill in all required fields", Toast.LENGTH_SHORT).show();
+            Toast.makeText(this, "Please fix the errors in the form", Toast.LENGTH_SHORT).show();
         }
         
         return isValid;
@@ -539,10 +550,19 @@ public class User_Profile extends AppCompatActivity {
                     try {
                         String errorBody = response.errorBody() != null ? response.errorBody().string() : "No error body";
                         Log.e(TAG, "Update failed. Error Response: " + response.code() + " - " + errorBody);
+                        
+                        // Handle backend error messages using version-safe parsing
+                        if (errorBody.contains("message")) {
+                            JsonObject errorJson = new JsonParser().parse(errorBody).getAsJsonObject();
+                            String message = errorJson.get("message").getAsString();
+                            Toast.makeText(User_Profile.this, "Error: " + message, Toast.LENGTH_LONG).show();
+                        } else {
+                            Toast.makeText(User_Profile.this, "Update failed: " + response.code(), Toast.LENGTH_SHORT).show();
+                        }
                     } catch (IOException e) {
                         e.printStackTrace();
+                        Toast.makeText(User_Profile.this, "Update failed: " + response.code(), Toast.LENGTH_SHORT).show();
                     }
-                    Toast.makeText(User_Profile.this, "Update failed: " + response.code(), Toast.LENGTH_SHORT).show();
                 }
             }
 
@@ -591,8 +611,7 @@ public class User_Profile extends AppCompatActivity {
                     String lName = user.has("lastName") ? user.get("lastName").getAsString() : "";
                     String phone = user.has("phoneNumber") ? user.get("phoneNumber").getAsString() : "";
                     String email = user.has("email") ? user.get("email").getAsString() : "";
-                    
-                    // Matching backend key "profilePicture"
+
                     String profilePicUrl = "";
                     if (user.has("profilePicture")) {
                         profilePicUrl = user.get("profilePicture").getAsString();
@@ -601,7 +620,7 @@ public class User_Profile extends AppCompatActivity {
                     }
                     currentProfilePicUrl = profilePicUrl;
 
-                    tvProfileName.setText(fName + " " + lName);
+                    tvProfileName.setText(String.format("%s %s", fName, lName));
                     tvProfileEmail.setText(email);
                     etFirstName.setText(fName);
                     etLastName.setText(lName);

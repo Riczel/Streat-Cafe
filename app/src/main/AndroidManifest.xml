@@ -15,6 +15,9 @@
         android:usesCleartextTraffic="true"
         android:theme="@style/Theme.Streat_Cafe">
         <activity
+            android:name=".Notifications"
+            android:exported="false" />
+        <activity
             android:name=".RecentOrders"
             android:exported="false" />
         <activity

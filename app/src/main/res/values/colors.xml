@@ -16,5 +16,6 @@
     <color name="JOSE">#CCCBCB</color>
     <color name="puti">#FBF2F2</color>
 
-
+    <color name="confirm_green">#00FF7F</color>
+    <color name="cancel_grey">#E0E0E0</color>
 </resources>

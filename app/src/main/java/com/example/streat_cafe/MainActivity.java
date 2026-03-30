@@ -27,10 +27,9 @@ public class MainActivity extends AppCompatActivity {
         new Handler().postDelayed(new Runnable() {
             @Override
             public void run() {
-                // Move to the next screen (LandingPage)
                 Intent intent = new Intent(MainActivity.this, LandingPage.class);
                 startActivity(intent);
-                finish(); // Close splash screen
+                finish();
             }
         }, 3000);
     }

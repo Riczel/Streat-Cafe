@@ -48,7 +48,6 @@ public class Sign_in extends AppCompatActivity {
 
         apiInterface = RetrofitClient.getClient().create(ApiInterface.class);
 
-        // Configure Google Sign-In with extended scopes
         GoogleSignInOptions gso = new GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
                 .requestServerAuthCode(getString(R.string.google_web_client_id))
                 .requestEmail()
@@ -78,7 +77,6 @@ public class Sign_in extends AppCompatActivity {
     }
 
     private void signInWithGoogle() {
-        // Sign out first to ensure the account picker always appears (good for testing)
         mGoogleSignInClient.signOut().addOnCompleteListener(task -> {
             Intent signInIntent = mGoogleSignInClient.getSignInIntent();
             startActivityForResult(signInIntent, RC_SIGN_IN);
@@ -88,7 +86,6 @@ public class Sign_in extends AppCompatActivity {
     @Override
     protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
-
         if (requestCode == RC_SIGN_IN) {
             Task<GoogleSignInAccount> task = GoogleSignIn.getSignedInAccountFromIntent(data);
             handleSignInResult(task);
@@ -99,28 +96,18 @@ public class Sign_in extends AppCompatActivity {
         try {
             GoogleSignInAccount account = completedTask.getResult(ApiException.class);
             String authCode = account.getServerAuthCode();
-            
-            Log.d("SignIn", "Google Auth Success. Code retrieved: " + (authCode != null));
-            
             if (authCode != null) {
                 sendCodeToBackend(authCode);
-            } else {
-                Toast.makeText(this, "Failed to get auth code from Google", Toast.LENGTH_SHORT).show();
             }
         } catch (ApiException e) {
-            // Error 10 = Developer Error (Check SHA-1 and Package Name in Cloud Console)
-            Log.e("SignIn", "Google Sign-In failed. Code: " + e.getStatusCode());
-            String errorMsg = "Google Sign-In Failed (Error " + e.getStatusCode() + ")";
-            if (e.getStatusCode() == 10) {
-                errorMsg += "\nTip: Check SHA-1 & Package Name in Google Console.";
-            }
-            Toast.makeText(this, errorMsg, Toast.LENGTH_LONG).show();
+            Toast.makeText(this, "Google Sign-In Failed", Toast.LENGTH_SHORT).show();
         }
     }
 
     private void sendCodeToBackend(String code) {
         JsonObject body = new JsonObject();
         body.addProperty("code", code);
+        body.addProperty("type", "login");
 
         googleSignInButton.setEnabled(false);
         apiInterface.loginWithGoogle(body).enqueue(new Callback<JsonObject>() {
@@ -128,9 +115,9 @@ public class Sign_in extends AppCompatActivity {
             public void onResponse(@NonNull Call<JsonObject> call, @NonNull Response<JsonObject> response) {
                 googleSignInButton.setEnabled(true);
                 if (response.isSuccessful() && response.body() != null) {
+                    Log.d("SignIn", "Response from Backend: " + response.body().toString());
                     handleSuccessResponse(response.body());
                 } else {
-                    Log.e("SignIn", "Backend rejected code: " + response.code());
                     Toast.makeText(Sign_in.this, "Server Authentication Failed", Toast.LENGTH_LONG).show();
                 }
             }
@@ -138,33 +125,35 @@ public class Sign_in extends AppCompatActivity {
             @Override
             public void onFailure(@NonNull Call<JsonObject> call, @NonNull Throwable t) {
                 googleSignInButton.setEnabled(true);
-                Log.e("SignIn", "Network Error: " + t.getMessage());
                 Toast.makeText(Sign_in.this, "Network Error", Toast.LENGTH_SHORT).show();
             }
         });
     }
 
     private void handleSuccessResponse(JsonObject body) {
-        // Sign-In logic: Only allow if user is NOT new (i.e., account already exists)
-        if (body.has("isNewUser") && body.get("isNewUser").getAsBoolean()) {
+        boolean isNew = false; 
+        
+        if (body.has("isNewUser")) {
+            isNew = body.get("isNewUser").getAsBoolean();
+
+        }
+
+        if (isNew) {
             Toast.makeText(Sign_in.this, "Email not registered. Please sign up first.", Toast.LENGTH_LONG).show();
             mGoogleSignInClient.signOut();
             return;
         }
 
         String token = body.has("token") ? body.get("token").getAsString() : "";
-        String email = "";
-        if (body.has("user")) {
-            email = body.getAsJsonObject("user").get("email").getAsString();
-        }
+        String email = body.has("user") ? body.getAsJsonObject("user").get("email").getAsString() : "";
         String role = body.has("role") ? body.get("role").getAsString() : "user";
 
         SharedPreferences sharedPreferences = getSharedPreferences("UserSession", MODE_PRIVATE);
-        SharedPreferences.Editor editor = sharedPreferences.edit();
-        editor.putString("userEmail", email);
-        editor.putString("authToken", token);
-        editor.putString("userRole", role);
-        editor.apply();
+        sharedPreferences.edit()
+                .putString("userEmail", email)
+                .putString("authToken", token)
+                .putString("userRole", role)
+                .apply();
 
         Toast.makeText(Sign_in.this, "Login Successful!", Toast.LENGTH_SHORT).show();
         startActivity(new Intent(Sign_in.this, User_Dashboard.class));
@@ -176,12 +165,12 @@ public class Sign_in extends AppCompatActivity {
         String password = passwordField.getText().toString().trim();
 
         if (TextUtils.isEmpty(email) || !Patterns.EMAIL_ADDRESS.matcher(email).matches()) {
-            emailField.setError("Valid email is required");
+            if (emailField != null) emailField.setError("Valid email is required");
             return;
         }
 
         if (TextUtils.isEmpty(password)) {
-            passwordField.setError("Password is required");
+            if (passwordField != null) passwordField.setError("Password is required");
             return;
         }
 
@@ -190,7 +179,6 @@ public class Sign_in extends AppCompatActivity {
         credentials.addProperty("password", password);
 
         loginButton.setEnabled(false);
-
         apiInterface.loginUser(credentials).enqueue(new Callback<JsonObject>() {
             @Override
             public void onResponse(@NonNull Call<JsonObject> call, @NonNull Response<JsonObject> response) {
@@ -201,9 +189,7 @@ public class Sign_in extends AppCompatActivity {
                     Toast.makeText(Sign_in.this, "Login failed", Toast.LENGTH_LONG).show();
                 }
             }
-
-            @Override
-            public void onFailure(@NonNull Call<JsonObject> call, @NonNull Throwable t) {
+            @Override public void onFailure(@NonNull Call<JsonObject> call, @NonNull Throwable t) {
                 loginButton.setEnabled(true);
                 Toast.makeText(Sign_in.this, "Network Error", Toast.LENGTH_LONG).show();
             }

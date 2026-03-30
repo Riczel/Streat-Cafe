@@ -568,7 +568,6 @@ public class Checkout extends AppCompatActivity {
         TextView tvAddress = dialogView.findViewById(R.id.confAddress);
         Button btnBackHome = dialogView.findViewById(R.id.btnBackHome);
 
-        // Use the real order number from server if available
         String displayID = (orderNum != null) ? "#" + orderNum : "#SC-" + UUID.randomUUID().toString().substring(0, 6).toUpperCase();
         if (tvOrderID != null) tvOrderID.setText(displayID);
 

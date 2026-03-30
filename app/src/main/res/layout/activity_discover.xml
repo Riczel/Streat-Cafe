@@ -55,7 +55,7 @@
                 android:layout_height="410dp"
                 android:contentDescription="@null"
                 android:scaleType="centerCrop"
-                app:srcCompat="@drawable/image__6_" />
+                app:srcCompat="@drawable/screenshot_2026_03_30_125442" />
 
             <androidx.cardview.widget.CardView
                 android:layout_width="match_parent"

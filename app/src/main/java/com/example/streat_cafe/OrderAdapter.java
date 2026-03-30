@@ -1,6 +1,7 @@
 package com.example.streat_cafe;
 
 import android.content.Context;
+import android.content.Intent;
 import android.content.SharedPreferences;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -98,7 +99,7 @@ public class OrderAdapter extends RecyclerView.Adapter<OrderAdapter.OrderViewHol
             holder.btnCancel.setOnClickListener(v -> showCancelConfirmation(realId));
         } else if (status.equals("out_for_delivery")) {
             holder.btnReceive.setVisibility(View.VISIBLE);
-            holder.btnReceive.setOnClickListener(v -> updateStatus(realId, "completed"));
+            holder.btnReceive.setOnClickListener(v -> showOrderDetailsDialog(order));
         } else if (status.equals("completed") || status.equals("cancelled")) {
             if (status.equals("completed")) {
                 holder.btnReorder.setVisibility(View.VISIBLE);
@@ -122,6 +123,9 @@ public class OrderAdapter extends RecyclerView.Adapter<OrderAdapter.OrderViewHol
             dialog.getWindow().setBackgroundDrawableResource(android.R.color.transparent);
         }
 
+        TextView tvTitle = dialogView.findViewById(R.id.tvDetailTitle);
+        TextView tvSubtitle = dialogView.findViewById(R.id.tvDetailSubtitle);
+        View llDetailsSection = dialogView.findViewById(R.id.llOrderDetailsSection);
         TextView tvOrderIdDetail = dialogView.findViewById(R.id.tvDetailOrderId);
         LinearLayout llItemsContainer = dialogView.findViewById(R.id.llItemsContainer);
         TextView tvTotalDetail = dialogView.findViewById(R.id.tvDetailTotal);
@@ -132,11 +136,15 @@ public class OrderAdapter extends RecyclerView.Adapter<OrderAdapter.OrderViewHol
         Button btnClose = dialogView.findViewById(R.id.btnDetailClose);
 
         String orderNumber = order.has("orderNumber") ? order.get("orderNumber").getAsString() : "---";
+        String status = order.has("status") ? order.get("status").getAsString().toLowerCase() : "";
+        String orderId = order.has("_id") ? order.get("_id").getAsString() : "";
+
         tvOrderIdDetail.setText(String.format("#SC-%s", orderNumber));
         tvTotalDetail.setText(String.format(Locale.getDefault(), "₱ %.2f", order.get("total").getAsDouble()));
 
         // Populate Items
         if (order.has("items") && order.get("items").isJsonArray()) {
+            llItemsContainer.removeAllViews();
             JsonArray items = order.getAsJsonArray("items");
             for (JsonElement itemElement : items) {
                 JsonObject item = itemElement.getAsJsonObject();
@@ -156,22 +164,46 @@ public class OrderAdapter extends RecyclerView.Adapter<OrderAdapter.OrderViewHol
             }
         }
 
-        // Feedback visibility - only for completed orders
-        String status = order.has("status") ? order.get("status").getAsString().toLowerCase() : "";
-        if (status.equals("completed")) {
+        // Configure UI based on status
+        if (status.equals("out_for_delivery")) {
+            // "Confirm Receipt" Mode
+            tvTitle.setText("Order Received");
+            tvSubtitle.setVisibility(View.VISIBLE);
+            llDetailsSection.setVisibility(View.GONE);
             sectionFeedback.setVisibility(View.VISIBLE);
+            btnSubmitFeedback.setText("Confirm");
+            
+            // Default 5-star rating, interactive
+            ratingBar.setRating(5);
+            ratingBar.setIsIndicator(false); 
+        } else if (status.equals("completed")) {
+            // "View Details" Mode for completed orders
+            tvTitle.setText("Order Details");
+            tvSubtitle.setVisibility(View.GONE);
+            llDetailsSection.setVisibility(View.VISIBLE);
+            sectionFeedback.setVisibility(View.VISIBLE);
+            btnSubmitFeedback.setText("Submit Feedback");
+            
+            // Default 5-star rating, interactive
+            ratingBar.setRating(5);
+            ratingBar.setIsIndicator(false);
         } else {
+            // "View Details" Mode for other statuses
+            tvTitle.setText("Order Details");
+            tvSubtitle.setVisibility(View.GONE);
+            llDetailsSection.setVisibility(View.VISIBLE);
             sectionFeedback.setVisibility(View.GONE);
         }
 
         btnSubmitFeedback.setOnClickListener(v -> {
             float rating = ratingBar.getRating();
             String comment = etComment.getText().toString().trim();
-            if (rating == 0) {
-                Toast.makeText(context, "Please provide a rating", Toast.LENGTH_SHORT).show();
-                return;
+            
+            if (status.equals("out_for_delivery")) {
+                confirmReceiptWithFeedback(orderId, orderNumber, rating, comment, dialog);
+            } else {
+                submitFeedback(orderId, rating, comment, dialog);
             }
-            submitFeedback(order.get("_id").getAsString(), rating, comment, dialog);
         });
 
         btnClose.setOnClickListener(v -> dialog.dismiss());
@@ -179,9 +211,39 @@ public class OrderAdapter extends RecyclerView.Adapter<OrderAdapter.OrderViewHol
         dialog.show();
     }
 
+    private void confirmReceiptWithFeedback(String orderId, String orderNumber, float rating, String comment, AlertDialog dialog) {
+        SharedPreferences sp = context.getSharedPreferences("UserSession", Context.MODE_PRIVATE);
+        String token = "Bearer " + sp.getString("authToken", "");
+        
+        JsonObject data = new JsonObject();
+        data.addProperty("orderId", orderId);
+        data.addProperty("status", "completed");
+        data.addProperty("feedback", comment);
+        data.addProperty("rating", rating);
+        data.addProperty("orderNumber", orderNumber);
+
+        ApiInterface api = RetrofitClient.getClient().create(ApiInterface.class);
+        api.updateOrderStatus(token, data).enqueue(new Callback<JsonObject>() {
+            @Override
+            public void onResponse(@NonNull Call<JsonObject> call, @NonNull Response<JsonObject> response) {
+                if (response.isSuccessful()) {
+                    Toast.makeText(context, "Order completed! Thank you for your feedback.", Toast.LENGTH_SHORT).show();
+                    dialog.dismiss();
+                    if (listener != null) listener.onOrderRefresh();
+                } else {
+                    Toast.makeText(context, "Failed to update order", Toast.LENGTH_SHORT).show();
+                }
+            }
+            @Override
+            public void onFailure(@NonNull Call<JsonObject> call, @NonNull Throwable t) {
+                Toast.makeText(context, "Network error", Toast.LENGTH_SHORT).show();
+            }
+        });
+    }
+
     private void submitFeedback(String orderId, float rating, String comment, AlertDialog dialog) {
         SharedPreferences sp = context.getSharedPreferences("UserSession", Context.MODE_PRIVATE);
-        String token = sp.getString("authToken", "");
+        String token = "Bearer " + sp.getString("authToken", "");
 
         JsonObject feedbackData = new JsonObject();
         feedbackData.addProperty("orderId", orderId);
@@ -189,20 +251,23 @@ public class OrderAdapter extends RecyclerView.Adapter<OrderAdapter.OrderViewHol
         feedbackData.addProperty("comment", comment);
 
         ApiInterface api = RetrofitClient.getClient().create(ApiInterface.class);
-        api.submitFeedback("Bearer " + token, feedbackData).enqueue(new Callback<JsonObject>() {
+        api.submitFeedback(token, feedbackData).enqueue(new Callback<JsonObject>() {
             @Override
             public void onResponse(@NonNull Call<JsonObject> call, @NonNull Response<JsonObject> response) {
                 if (response.isSuccessful()) {
                     Toast.makeText(context, "Thank you for your feedback!", Toast.LENGTH_SHORT).show();
                     dialog.dismiss();
+                    if (listener != null) listener.onOrderRefresh();
                 } else {
-                    Toast.makeText(context, "Failed to submit feedback", Toast.LENGTH_SHORT).show();
+                    Toast.makeText(context, "Feedback submission failed", Toast.LENGTH_SHORT).show();
+                    dialog.dismiss();
                 }
             }
 
             @Override
             public void onFailure(@NonNull Call<JsonObject> call, @NonNull Throwable t) {
-                Toast.makeText(context, "Network error", Toast.LENGTH_SHORT).show();
+                Toast.makeText(context, "Network error during feedback", Toast.LENGTH_SHORT).show();
+                dialog.dismiss();
             }
         });
     }
@@ -218,14 +283,14 @@ public class OrderAdapter extends RecyclerView.Adapter<OrderAdapter.OrderViewHol
 
     private void updateStatus(String orderId, String newStatus) {
         SharedPreferences sp = context.getSharedPreferences("UserSession", Context.MODE_PRIVATE);
-        String token = sp.getString("authToken", "");
+        String token = "Bearer " + sp.getString("authToken", "");
 
         JsonObject statusData = new JsonObject();
         statusData.addProperty("orderId", orderId);
         statusData.addProperty("status", newStatus);
 
         ApiInterface api = RetrofitClient.getClient().create(ApiInterface.class);
-        api.updateOrderStatus("Bearer " + token, statusData).enqueue(new Callback<JsonObject>() {
+        api.updateOrderStatus(token, statusData).enqueue(new Callback<JsonObject>() {
             @Override
             public void onResponse(@NonNull Call<JsonObject> call, @NonNull Response<JsonObject> response) {
                 if (response.isSuccessful() && listener != null) {
@@ -238,16 +303,27 @@ public class OrderAdapter extends RecyclerView.Adapter<OrderAdapter.OrderViewHol
 
     private void reorderItems(JsonArray items) {
         SharedPreferences sp = context.getSharedPreferences("UserSession", Context.MODE_PRIVATE);
-        String token = sp.getString("authToken", "");
-        JsonObject cartData = new JsonObject();
-        cartData.add("items", items);
+        String token = "Bearer " + sp.getString("authToken", "");
+        
+        JsonObject payload = new JsonObject();
+        payload.add("cart", items); // Match the 'cart' field expected by saveCart logic
+
         ApiInterface api = RetrofitClient.getClient().create(ApiInterface.class);
-        api.saveCart("Bearer " + token, cartData).enqueue(new Callback<JsonObject>() {
+        api.saveCart(token, payload).enqueue(new Callback<JsonObject>() {
             @Override
             public void onResponse(@NonNull Call<JsonObject> call, @NonNull Response<JsonObject> response) {
-                if (response.isSuccessful()) Toast.makeText(context, "Added to cart!", Toast.LENGTH_SHORT).show();
+                if (response.isSuccessful()) {
+                    Toast.makeText(context, "Order items added to cart!", Toast.LENGTH_SHORT).show();
+                    // Navigate to Cart activity to display the items
+                    Intent intent = new Intent(context, Cart.class);
+                    context.startActivity(intent);
+                } else {
+                    Toast.makeText(context, "Failed to reorder", Toast.LENGTH_SHORT).show();
+                }
             }
-            @Override public void onFailure(@NonNull Call<JsonObject> call, @NonNull Throwable t) {}
+            @Override public void onFailure(@NonNull Call<JsonObject> call, @NonNull Throwable t) {
+                Toast.makeText(context, "Network error", Toast.LENGTH_SHORT).show();
+            }
         });
     }
 
